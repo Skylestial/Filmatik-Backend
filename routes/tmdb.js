@@ -10,10 +10,36 @@ const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
  * Helper function to shuffle and pick random elements from an array
  */
 const getRandomMovies = (movies, count) => {
-    return movies.sort(() => 0.5 - Math.random()).slice(0, count);
+    return [...movies].sort(() => Math.random() - 0.5).slice(0, count);
 };
 
-// 🎬 **Top Picks API (Balanced Mix)**
+/**
+ * Fetch movie genres and store for mapping
+ */
+let genreNames = {};
+const fetchGenres = async () => {
+    try {
+        const response = await axios.get(`${TMDB_BASE_URL}/genre/movie/list`, {
+            params: { api_key: TMDB_API_KEY, language: 'en-US' }
+        });
+
+        if (response.data.genres) {
+            genreNames = response.data.genres.reduce((acc, genre) => {
+                acc[genre.id] = genre.name;
+                return acc;
+            }, {});
+        }
+    } catch (error) {
+        console.error('Error fetching genres:', error);
+    }
+};
+
+// Fetch genres at startup
+fetchGenres();
+
+/**
+ * 🎬 **Top Picks API (Balanced Mix)**
+ */
 router.get('/movies/top-picks', async (req, res) => {
     try {
         const response = await axios.get(`${TMDB_BASE_URL}/movie/popular`, {
@@ -25,7 +51,7 @@ router.get('/movies/top-picks', async (req, res) => {
         }
 
         const movies = response.data.results;
-        
+
         // Categorize by industry
         const bollywood = movies.filter(m => m.original_language === 'hi'); // Hindi
         const tollywood = movies.filter(m => m.original_language === 'te'); // Telugu
@@ -33,12 +59,17 @@ router.get('/movies/top-picks', async (req, res) => {
         const anime = movies.filter(m => m.original_language === 'ja'); // Japanese
 
         // Ensure balanced mix (at least 2-3 from each, with fallback)
-        const topPicks = movies.map(movie => ({
-    title: movie.title,
-    poster: `https://image.tmdb.org/t/p/w500${movie.poster_path}`,  // ✅ Fix poster
-    genre: movie.genre_ids.join(", "),  // ✅ Fix genre mapping
-    rated: movie.vote_average  // ✅ Use rating from TMDB
-})).slice(0, 10);
+        const topPicks = getRandomMovies([
+            ...bollywood.slice(0, 3),
+            ...tollywood.slice(0, 3),
+            ...hollywood.slice(0, 3),
+            ...anime.slice(0, 3)
+        ], 10).map(movie => ({
+            title: movie.title,
+            poster: movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : null,
+            genre: movie.genre_ids.map(id => genreNames[id] || "Unknown").join(", "),
+            rated: movie.vote_average || "N/A"
+        }));
 
         res.json(topPicks);
     } catch (error) {
@@ -47,7 +78,9 @@ router.get('/movies/top-picks', async (req, res) => {
     }
 });
 
-// 🎭 **Genre-wise Movie API (Mixed Industries)**
+/**
+ * 🎭 **Genre-wise Movie API (Mixed Industries)**
+ */
 const genreMap = {
     sciFi: 878,
     supernatural: 14,
@@ -73,7 +106,13 @@ router.get('/movies/genre/:genre', async (req, res) => {
 
         const mixedMovies = response.data.results
             .filter(movie => ["hi", "te", "ta", "en", "ja", "ml", "kn", "mr"].includes(movie.original_language))
-            .slice(0, 5); // Limit to 5 per genre
+            .slice(0, 5)
+            .map(movie => ({
+                title: movie.title,
+                poster: movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : null,
+                genre: movie.genre_ids.map(id => genreNames[id] || "Unknown").join(", "),
+                rated: movie.vote_average || "N/A"
+            }));
 
         res.json(mixedMovies);
     } catch (error) {
@@ -82,7 +121,9 @@ router.get('/movies/genre/:genre', async (req, res) => {
     }
 });
 
-// 🎟 **Hardcoded Theater List**
+/**
+ * 🎟 **Hardcoded Theater List**
+ */
 const theaters = [
     { id: 1, name: "PVR Cinemas" },
     { id: 2, name: "INOX" },
@@ -100,7 +141,9 @@ router.get('/theaters', (req, res) => {
     res.json(theaters);
 });
 
-// 🎬 **Movies for Each Theater (Mixed Industry)**
+/**
+ * 🎬 **Movies for Each Theater (Mixed Industry)**
+ */
 router.get('/theaters/:theaterId/movies', async (req, res) => {
     try {
         const response = await axios.get(`${TMDB_BASE_URL}/movie/now_playing`, {
@@ -114,7 +157,12 @@ router.get('/theaters/:theaterId/movies', async (req, res) => {
         const mixedMovies = getRandomMovies(
             response.data.results.filter(movie => ["hi", "te", "ta", "en", "ja", "ml", "kn", "mr"].includes(movie.original_language)),
             6 // Randomly pick 4-6 movies
-        );
+        ).map(movie => ({
+            title: movie.title,
+            poster: movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : null,
+            genre: movie.genre_ids.map(id => genreNames[id] || "Unknown").join(", "),
+            rated: movie.vote_average || "N/A"
+        }));
 
         res.json(mixedMovies);
     } catch (error) {
