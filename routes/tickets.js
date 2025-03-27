@@ -1,13 +1,13 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const Ticket = require('../models/Ticket'); // Ticket model
-const User = require('../models/User'); // User model
+const Ticket = require('../models/Ticket');
+const User = require('../models/User');
 const router = express.Router();
 
 // 🎟 **Ticket Booking API (With Authentication)**
 router.post('/book', async (req, res) => {
     try {
-        const { username, movieId, theaterId, showTime, seats } = req.body; // ✅ Fixed field names
+        const { username, movieId, theaterId, showTime, seats } = req.body;
 
         // ✅ Basic Validation
         if (!username || !movieId || !theaterId || !showTime) {
@@ -17,7 +17,7 @@ router.post('/book', async (req, res) => {
             return res.status(400).json({ error: 'Seats must be a positive integer.' });
         }
 
-        // 🔍 **Check if the username exists in the database**
+        // 🔍 **Check if user exists**
         const user = await User.findOne({ username });
         if (!user) {
             return res.status(404).json({ error: 'User not found. Please log in first.' });
@@ -39,15 +39,12 @@ router.get('/booked/:username', async (req, res) => {
     try {
         const { username } = req.params;
 
-        // 🔍 Check if the user exists
         const user = await User.findOne({ username });
         if (!user) {
             return res.status(404).json({ error: 'User not found.' });
         }
 
-        // 🎟 Fetch all booked tickets for the user
         const tickets = await Ticket.find({ username });
-
         res.status(200).json({ tickets });
     } catch (error) {
         console.error('❌ Error fetching tickets:', error);
