@@ -33,12 +33,12 @@ router.get('/movies/top-picks', async (req, res) => {
         const anime = movies.filter(m => m.original_language === 'ja'); // Japanese
 
         // Ensure balanced mix (at least 2-3 from each, with fallback)
-        const topPicks = [
-            ...getRandomMovies(bollywood, 3),
-            ...getRandomMovies(tollywood, 3),
-            ...getRandomMovies(hollywood, 3),
-            ...getRandomMovies(anime, 3)
-        ].slice(0, 10); // Limit to 10
+        const topPicks = movies.map(movie => ({
+    title: movie.title,
+    poster: `https://image.tmdb.org/t/p/w500${movie.poster_path}`,  // ✅ Fix poster
+    genre: movie.genre_ids.join(", "),  // ✅ Fix genre mapping
+    rated: movie.vote_average  // ✅ Use rating from TMDB
+})).slice(0, 10);
 
         res.json(topPicks);
     } catch (error) {
