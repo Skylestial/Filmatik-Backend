@@ -1,0 +1,28 @@
+# Ignore environment configuration
+env.js
+.env
+local.properties
+gradle.properties
+
+
+# Ignore IDE-specific files
+/.idea/
+/*.iml
+
+# Ignore build files
+/build/
+/app/build/
+
+# Ignore Node modules (if using React Native or backend)
+node_modules/
+
+# Ignore log files
+*.log
+
+# Ignore crash reports
+crashlytics/
+
+# Ignore generated files
+*.apk
+*.aab
+.DS_Store
