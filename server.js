@@ -9,7 +9,6 @@ const passwordResetRoutes = require("./routes/passwordReset"); // ✅ Password R
 const ticketRoutes = require("./routes/tickets"); // ✅ Ticket Booking Routes
 const paymentRoutes = require("./routes/payment"); // ✅ Payment Routes
 const profileRoutes = require("./routes/profile"); // ✅ Profile API Routes
-const theaterRoutes = require("./routes/theaters");
 
 const app = express();
 
