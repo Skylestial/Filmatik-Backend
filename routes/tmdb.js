@@ -121,9 +121,14 @@ router.get('/movies/genre/:genre', async (req, res) => {
     }
 });
 
-/**
- * 🎟 **Hardcoded Theater List**
- */
+const express = require("express");
+const axios = require("axios");
+const router = express.Router();
+
+const TMDB_BASE_URL = "https://api.themoviedb.org/3";
+const TMDB_API_KEY = process.env.TMDB_API_KEY; // Ensure this is set in .env
+
+// 🎟 **Hardcoded Theater List**
 const theaters = [
     { id: 1, name: "PVR Cinemas" },
     { id: 2, name: "INOX" },
@@ -137,37 +142,43 @@ const theaters = [
     { id: 10, name: "Gold Cinema" }
 ];
 
-router.get('/theaters', (req, res) => {
+// 🎭 Function to Get Random Movies
+function getRandomMovies(movieList, count) {
+    if (movieList.length <= count) return movieList;
+    return movieList.sort(() => 0.5 - Math.random()).slice(0, count);
+}
+
+// 📌 **GET All Theaters**
+router.get("/theaters", (req, res) => {
     res.json(theaters);
 });
 
-/**
- * 🎬 **Movies for Each Theater (Mixed Industry)**
- */
-router.get('/theaters/:theaterId/movies', async (req, res) => {
+// 🎬 **GET Movies Playing in a Specific Theater**
+router.get("/theaters/:theaterId/movies", async (req, res) => {
+    const { theaterId } = req.params;
+    const theater = theaters.find(t => t.id === parseInt(theaterId));
+
+    if (!theater) return res.status(404).json({ error: "Theater not found" });
+
     try {
         const response = await axios.get(`${TMDB_BASE_URL}/movie/now_playing`, {
-            params: { api_key: TMDB_API_KEY, language: 'en-US', page: 1, region: 'IN' }
+            params: { api_key: TMDB_API_KEY, language: "en-US", page: 1, region: "IN" }
         });
 
         if (!response.data.results || response.data.results.length === 0) {
-            return res.status(404).json({ error: 'No movies currently playing.' });
+            return res.status(404).json({ error: "No movies currently playing." });
         }
 
-        const mixedMovies = getRandomMovies(
-            response.data.results.filter(movie => ["hi", "te", "ta", "en", "ja", "ml", "kn", "mr"].includes(movie.original_language)),
-            6 // Randomly pick 4-6 movies
-        ).map(movie => ({
-            title: movie.title,
-            poster: movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : null,
-            genre: movie.genre_ids.map(id => genreNames[id] || "Unknown").join(", "),
-            rated: movie.vote_average || "N/A"
-        }));
+        const filteredMovies = response.data.results.filter(movie =>
+            ["hi", "te", "ta", "en", "ja", "ml", "kn", "mr"].includes(movie.original_language)
+        );
 
-        res.json(mixedMovies);
+        const mixedMovies = getRandomMovies(filteredMovies, 6);
+
+        res.json({ theater: theater.name, movies: mixedMovies });
     } catch (error) {
-        console.error('Error fetching movies for theater:', error);
-        res.status(500).json({ error: 'Failed to fetch movies' });
+        console.error(`❌ Error fetching movies for theater ${theater.name}:`, error);
+        res.status(500).json({ error: "Failed to fetch movies" });
     }
 });
 
