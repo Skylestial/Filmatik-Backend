@@ -6,6 +6,20 @@ const router = express.Router();
 const TMDB_API_KEY = process.env.TMDB_API_KEY;
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 
+// 🎟 **Hardcoded Theater List**
+const theaters = [
+    { id: 1, name: "PVR Cinemas" },
+    { id: 2, name: "INOX" },
+    { id: 3, name: "Carnival Cinemas" },
+    { id: 4, name: "Cinepolis" },
+    { id: 5, name: "Miraj Cinemas" },
+    { id: 6, name: "Movietime Cinemas" },
+    { id: 7, name: "Wave Cinemas" },
+    { id: 8, name: "Rajhans Cinemas" },
+    { id: 9, name: "Mukta A2 Cinemas" },
+    { id: 10, name: "Gold Cinema" }
+];
+
 /**
  * Helper function to shuffle and pick random elements from an array
  */
@@ -30,7 +44,7 @@ const fetchGenres = async () => {
             }, {});
         }
     } catch (error) {
-        console.error('Error fetching genres:', error);
+        console.error('❌ Error fetching genres:', error);
     }
 };
 
@@ -73,7 +87,7 @@ router.get('/movies/top-picks', async (req, res) => {
 
         res.json(topPicks);
     } catch (error) {
-        console.error('Error fetching top picks:', error);
+        console.error('❌ Error fetching top picks:', error);
         res.status(500).json({ error: 'Failed to fetch top picks' });
     }
 });
@@ -116,44 +130,21 @@ router.get('/movies/genre/:genre', async (req, res) => {
 
         res.json(mixedMovies);
     } catch (error) {
-        console.error(`Error fetching ${genreName} movies:`, error);
+        console.error(`❌ Error fetching ${genreName} movies:`, error);
         res.status(500).json({ error: `Failed to fetch ${genreName} movies` });
     }
 });
 
-const express = require("express");
-const axios = require("axios");
-const router = express.Router();
-
-const TMDB_BASE_URL = "https://api.themoviedb.org/3";
-const TMDB_API_KEY = process.env.TMDB_API_KEY; // Ensure this is set in .env
-
-// 🎟 **Hardcoded Theater List**
-const theaters = [
-    { id: 1, name: "PVR Cinemas" },
-    { id: 2, name: "INOX" },
-    { id: 3, name: "Carnival Cinemas" },
-    { id: 4, name: "Cinepolis" },
-    { id: 5, name: "Miraj Cinemas" },
-    { id: 6, name: "Movietime Cinemas" },
-    { id: 7, name: "Wave Cinemas" },
-    { id: 8, name: "Rajhans Cinemas" },
-    { id: 9, name: "Mukta A2 Cinemas" },
-    { id: 10, name: "Gold Cinema" }
-];
-
-// 🎭 Function to Get Random Movies
-function getRandomMovies(movieList, count) {
-    if (movieList.length <= count) return movieList;
-    return movieList.sort(() => 0.5 - Math.random()).slice(0, count);
-}
-
-// 📌 **GET All Theaters**
+/**
+ * 🎟 **GET All Theaters**
+ */
 router.get("/theaters", (req, res) => {
     res.json(theaters);
 });
 
-// 🎬 **GET Movies Playing in a Specific Theater**
+/**
+ * 🎬 **GET Movies Playing in a Specific Theater**
+ */
 router.get("/theaters/:theaterId/movies", async (req, res) => {
     const { theaterId } = req.params;
     const theater = theaters.find(t => t.id === parseInt(theaterId));
