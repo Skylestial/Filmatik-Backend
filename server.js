@@ -9,6 +9,7 @@ const passwordResetRoutes = require("./routes/passwordReset"); // ✅ Password R
 const ticketRoutes = require("./routes/tickets"); // ✅ Ticket Booking Routes
 const paymentRoutes = require("./routes/payment"); // ✅ Payment Routes
 const profileRoutes = require("./routes/profile"); // ✅ Profile API Routes
+const theaterRoutes = require("./routes/theaters");
 
 const app = express();
 
@@ -54,6 +55,7 @@ app.use("/api/password-reset", passwordResetRoutes); // ✅ Password Reset Route
 app.use("/api/tickets", ticketRoutes); // ✅ Ticket Booking API
 app.use("/api/payments", paymentRoutes); // ✅ Payment API
 app.use("/api/profile", profileRoutes); // ✅ Profile API (Newly Added)
+app.use("/api/theaters", theaterRoutes); 
 
 // ✅ Default Route
 app.get("/", (req, res) => {
