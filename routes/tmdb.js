@@ -96,7 +96,7 @@ router.get('/movies/top-picks', async (req, res) => {
  * 🎭 **Genre-wise Movie API (Mixed Industries)**
  */
 const genreMap = {
-    sciFi: 878,
+    scifi: 878,
     supernatural: 14,
     horror: 27,
     comedy: 35,
