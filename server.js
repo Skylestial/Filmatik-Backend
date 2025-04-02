@@ -54,7 +54,6 @@ app.use("/api/password-reset", passwordResetRoutes); // ✅ Password Reset Route
 app.use("/api/tickets", ticketRoutes); // ✅ Ticket Booking API
 app.use("/api/payments", paymentRoutes); // ✅ Payment API
 app.use("/api/profile", profileRoutes); // ✅ Profile API (Newly Added)
-app.use("/api/theaters", theaterRoutes); 
 
 // ✅ Default Route
 app.get("/", (req, res) => {
