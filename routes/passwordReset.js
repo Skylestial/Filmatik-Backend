@@ -8,6 +8,7 @@ const nodemailer = require("nodemailer");
 const JWT_SECRET = process.env.JWT_SECRET;
 const EMAIL_USER = process.env.EMAIL_USER;
 const EMAIL_PASS = process.env.EMAIL_PASS;
+const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000"; // ✅ Fallback if .env is missing
 
 // ✅ Configure Nodemailer (With Fix for Self-Signed Certificate Error)
 const transporter = nodemailer.createTransport({
@@ -37,8 +38,8 @@ router.post("/forgot-password", async (req, res) => {
     // Generate Reset Token (Valid for 15 minutes)
     const resetToken = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: "15m" });
 
-    // Send Reset Email
-    const resetLink = `https://filmatik.com/reset-password/${resetToken}`;
+    // ✅ Use FRONTEND_URL from .env
+    const resetLink = `${FRONTEND_URL}/reset-password/${resetToken}`;
 
     const mailOptions = {
       from: `"Filmatik Support" <${EMAIL_USER}>`,
