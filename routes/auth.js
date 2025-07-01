@@ -79,7 +79,9 @@ router.post("/login", async (req, res) => {
   }
 });
 
-// 📌 FORGOT PASSWORD ROUTE
+const nodemailer = require("nodemailer");
+require("dotenv").config(); // Load environment variables
+
 router.post("/forgot-password", async (req, res) => {
   try {
     const { email } = req.body;
@@ -94,12 +96,41 @@ router.post("/forgot-password", async (req, res) => {
     }
 
     // Generate password reset token (valid for 1 hour)
-    const resetToken = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: "1h" });
+    const resetToken = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
 
-    // TODO: Send token via email (Implement email service)
-    console.log(`🔗 Reset Password Token: ${resetToken}`);
+    // Reset link (change to your frontend URL)
+    const resetLink = `https://yourfrontend.com/reset-password?token=${resetToken}`;
 
-    res.status(200).json({ message: "Reset link sent to email", token: resetToken });
+    // Gmail SMTP transporter
+    const transporter = nodemailer.createTransport({
+      service: "Gmail",
+      auth: {
+        user: process.env.EMAIL_USER, // filmatik.official@gmail.com
+        pass: process.env.EMAIL_PASS, // App Password
+      },
+    });
+
+    // Email options
+    const mailOptions = {
+      from: "Filmatik <filmatik.official@gmail.com>",
+      to: email,
+      subject: "Reset Your Password - Filmatik",
+      html: `
+        <p>Hi,</p>
+        <p>You requested a password reset for your Filmatik account.</p>
+        <p>Click the link below to reset your password:</p>
+        <a href="${resetLink}">Reset Password</a>
+        <p>This link will expire in 1 hour.</p>
+        <p>If you didn't request this, please ignore this email.</p>
+        <br>
+        <p>— The Filmatik Team</p>
+      `,
+    };
+
+    // Send email
+    await transporter.sendMail(mailOptions);
+
+    res.status(200).json({ message: "Reset link sent to email" });
   } catch (err) {
     console.error("❌ Forgot Password Error:", err);
     res.status(500).json({ error: "Internal Server Error" });
