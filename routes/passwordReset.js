@@ -39,7 +39,7 @@ router.post("/forgot-password", async (req, res) => {
     const resetToken = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: "15m" });
 
     // ✅ Use FRONTEND_URL from .env
-    const resetLink = `${FRONTEND_URL}/reset-password/${resetToken}`;
+    const resetLink = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`; 
 
     const mailOptions = {
       from: `"Filmatik Support" <${EMAIL_USER}>`,
