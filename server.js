@@ -2,6 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const path = require("path"); // ✅ Added for serving static HTML
 
 const authRoutes = require("./routes/auth"); // ✅ Authentication routes
 const tmdbRoutes = require("./routes/tmdb"); // ✅ TMDB API routes
@@ -15,6 +16,9 @@ const app = express();
 // ✅ Middleware
 app.use(express.json()); // Parse JSON bodies
 app.use(cors()); // Enable CORS
+
+// ✅ Serve Static Files (e.g., reset-password.html)
+app.use(express.static(path.join(__dirname, "public"))); // assumes reset-password.html is in /public
 
 // ✅ Environment Variables
 const PORT = process.env.PORT || 5000;
@@ -38,7 +42,7 @@ if (!JWT_SECRET) {
 
 // 🔍 Connect to MongoDB
 console.log("🔍 Connecting to MongoDB...");
-mongoose.set("strictQuery", true); // Recommended for latest MongoDB
+mongoose.set("strictQuery", true);
 mongoose
   .connect(MONGO_URI)
   .then(() => console.log("✅ MongoDB Connected Successfully"))
@@ -48,12 +52,17 @@ mongoose
   });
 
 // ✅ API Routes
-app.use("/api/auth", authRoutes); // ✅ Authentication Routes (Signup, Login, Protected)
-app.use("/api/movies", tmdbRoutes); // ✅ TMDB Movie Routes
-app.use("/api/password-reset", passwordResetRoutes); // ✅ Password Reset Routes
-app.use("/api/tickets", ticketRoutes); // ✅ Ticket Booking API
-app.use("/api/payments", paymentRoutes); // ✅ Payment API
-app.use("/api/profile", profileRoutes); // ✅ Profile API (Newly Added)
+app.use("/api/auth", authRoutes);
+app.use("/api/movies", tmdbRoutes);
+app.use("/api/password-reset", passwordResetRoutes);
+app.use("/api/tickets", ticketRoutes);
+app.use("/api/payments", paymentRoutes);
+app.use("/api/profile", profileRoutes);
+
+// ✅ Serve Reset Password Page
+app.get("/reset-password/:token", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "reset-password.html"));
+});
 
 // ✅ Default Route
 app.get("/", (req, res) => {
